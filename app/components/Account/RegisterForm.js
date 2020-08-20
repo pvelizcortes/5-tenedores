@@ -1,36 +1,54 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Input, Icon, Button } from "react-native-elements";
+
+import Loading from "../Loading";
 import { validateEmail } from "../../utils/validations"
 import { size, isEmpty, isObject } from "lodash";
+import * as firebase from "firebase";
+import { useNavigation} from "@react-navigation/native";
 
 
-export default function Register(props) {
+
+export default function RegisterForm(props) {
   const { toastRef } = props;
   const [showPassWord, setShowPassWord] = useState(false);
   const [showRepeatPassword, setshowRepeatPassword] = useState(false);
-  const [formData, setformData] = useState({defaultFormValue()});
+  const [formData, setformData] = useState(defaultFormValue());
+  const [loading, setloading] = useState(false);
+  const navigation = useNavigation();
 
-  const onSubmit = () => {
+  const onSubmit = () => {    
     if (isEmpty(formData.email) || isEmpty(formData.password) || isEmpty(formData.repeatPassword)){      
-      toastRef.current.show("Todos los campos son obligatorios.")
+      toastRef.current.show("Todos los campos son obligatorios.");
     }
     else if (!validateEmail(formData.email)){      
-      toastRef.current.show("Ingrese un Email correcto.")
+      toastRef.current.show("Ingrese un Email correcto.");
     }
     else if (formData.password !== formData.repeatPassword){      
-      toastRef.current.show("Las contraseñas tienen que ser iguales.")
+      toastRef.current.show("Las contraseñas tienen que ser iguales.");
     }
     else if (size(formData.password) < 6){      
-      toastRef.current.show("La contraseña tiene que ser al menos de 6 caracteres.")
+      toastRef.current.show("La contraseña tiene que ser al menos de 6 caracteres.");
     }
     else{
-      console.log("OK");
+      setloading(true);
+      firebase
+      .auth()
+      .createUserWithEmailAndPassword(formData.email, formData.password)
+      .then(response => {
+        setloading(false);
+        navigation.navigate("account");
+      })
+      .catch(error =>{
+        setloading(false);
+        toastRef.current.show("El email ya está en uso, pruebe con otro.");
+      })
     }
   }
 
   const onChange = (e, type) => {
-    setformData({...formData, [type]: e.nativeEvent.Text})
+    setformData({...formData, [type]: e.nativeEvent.text})
   }
 
   return (
@@ -38,7 +56,7 @@ export default function Register(props) {
       <Input
         placeholder="Correo electronico"
         containerStyle={styles.inputForm}
-        onChange={e => onChange(e,"email")}
+        onChange={(e) => onChange(e,"email")}
         rightIcon={
           <Icon
             type="material-community"
@@ -52,7 +70,7 @@ export default function Register(props) {
         containerStyle={styles.inputForm}
         password={true}
         secureTextEntry={showPassWord ? false : true}
-        onChange={e => onChange(e,"password")}
+        onChange={(e) => onChange(e,"password")}
         rightIcon={
           <Icon
             type="material-community"
@@ -67,7 +85,7 @@ export default function Register(props) {
         containerStyle={styles.inputForm}
         password={true}
         secureTextEntry={showRepeatPassword ? false : true}
-        onChange={e => onChange(e,"repeatPassword")}
+        onChange={(e) => onChange(e,"repeatPassword")}
         rightIcon={
           <Icon
             type="material-community"
@@ -83,6 +101,7 @@ export default function Register(props) {
         buttonStyle={styles.btnRegister}
         onPress={onSubmit}
       ></Button>
+      <Loading isVisible={loading} text="Creando cuenta"></Loading>
     </View>
   );
 }

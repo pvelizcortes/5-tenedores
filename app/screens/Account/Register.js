@@ -2,14 +2,12 @@ import React, { useRef} from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 // Para que al abrir el teclado siempre se vea el input //
-import Toast from "react-native-easy-toast"
+import Toast from "react-native-easy-toast";
 
 import RegisterForm from "../../components/Account/RegisterForm";
 
 export default function Register() {
 const toastRef = useRef();
-
-
   return (
     // KeyboardAwareScrollView para que el input siempre se vea al abrir el teclado
     <KeyboardAwareScrollView> 
