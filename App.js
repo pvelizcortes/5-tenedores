@@ -1,15 +1,11 @@
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
-import Navigation from "./app/navigations/Navigation";
+import React from "react";
+import { YellowBox } from "react-native";
+
 import { firebaseApp } from "./app/utils/firebase";
-import * as firebase from "firebase";
+import Navigation from "./app/navigations/Navigation";
+
+YellowBox.ignoreWarnings(["Setting a timer"]);
 
 export default function App() {
-  useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      // console.log(user);
-    });
-  }, []);
-
   return <Navigation></Navigation>;
 }
