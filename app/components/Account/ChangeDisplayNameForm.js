@@ -7,7 +7,7 @@ export default function ChangeDisplayNameForm(props) {
   const { displayName, setshowModal, toastRef, setReloadUserInfo } = props;
   const [newDisplayName, setnewDisplayName] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = uIeState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = () => {
     setError(null);
@@ -54,7 +54,7 @@ export default function ChangeDisplayNameForm(props) {
         title="Cambiar nombre"
         containerStyle={styles.btnContainer}
         buttonStyle={styles.btn}
-        onPress={onsubmit}
+        onPress={onSubmit}
         loading={isLoading}
       ></Button>
     </View>

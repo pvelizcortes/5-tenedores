@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Input, Button } from "react-native-elements";
+import * as firebase from "firebase";
 import { validateEmail } from "../../utils/validations";
+import { reauthenticate } from "../../utils/api";
 
 export default function ChangeEmailForm(props) {
-  const { email, setShowMoadl, toastRef, setReloadUserInfo } = props;
+  const { email, setshowModal, toastRef, setReloadUserInfo } = props;
   const [formData, setFormData] = useState(defaultValue());
-  const [showPassword, setShowPassword] = uSeState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isLoading, setisLoading] = useState(false);
 
   const onChange = (e, type) => {
+    setFormData({ ...formData, [type]: e.nativeEvent.text });
+  };
+
+  const onSubmit = () => {
     setErrors({});
     if (!formData.email || email === formData.email) {
       setErrors({
@@ -24,34 +31,28 @@ export default function ChangeEmailForm(props) {
         password: "La contraseña no puede estar vacía",
       });
     } else {
-      console.log("todo Ok");
+      setisLoading(true);
+      reauthenticate(formData.password)
+        .then(() => {
+          firebase
+            .auth()
+            .currentUser.updateEmail(formData.email)
+            .then(() => {
+              setisLoading(false);
+               setReloadUserInfo(true);
+               toastRef.current.show("Email actualizado correctamente");
+               setshowModal(false);
+            })
+            .catch(() => {
+              setErrors({ email: "Error al actualizar el email." });
+              setisLoading(false);
+            });
+        })
+        .catch(() => {
+          setisLoading(false);
+          setErrors({ password: "La contraseña no es correcta." });
+        });
     }
-  };
-
-  const onSubmit = () => {
-    // setError(null);
-    // if (!newDisplayName) {
-    //   setError("El email no puede estar vacio");
-    // } else if (displayName === newDisplayName) {
-    //   setError("El email no puede ser igual al actual.");
-    // } else {
-    //   setIsLoading(true);
-    //   const update = {
-    //     displayName: newDisplayName,
-    //   };
-    //   firebase
-    //     .auth()
-    //     .currentUser.updateProfile(update)
-    //     .then(() => {
-    //       setIsLoading(false);
-    //       setReloadUserInfo(true);
-    //       setshowModal(false);
-    //     })
-    //     .catch(() => {
-    //       setError("Error al actualizar el nombre,");
-    //       setIsLoading(false);
-    //     });
-    // }
   };
 
   return (
@@ -59,12 +60,13 @@ export default function ChangeEmailForm(props) {
       <Input
         placeholder="Correo Electronico"
         containerStyle={styles.input}
+        defaultValue={email || ""}
         rightIcon={{
           type: "material-community",
           name: "at",
           color: "#c2c2c2",
         }}
-        onChange={(e) => setnewDisplayName(e.nativeEvent.text)}
+        onChange={(e) => onChange(e, "email")}
         errorMessage={errors.email}
       ></Input>
       <Input
@@ -78,14 +80,14 @@ export default function ChangeEmailForm(props) {
           color: "#c2c2c2",
           onPress: () => setShowPassword(!showPassword),
         }}
-        onChange={() => onChange(e, "password")}
+        onChange={(e) => onChange(e, "password")}
         errorMessage={errors.password}
       ></Input>
       <Button
         title="Cambiar email"
         containerStyle={styles.btnContainer}
         buttonStyle={styles.btn}
-        onPress={onsubmit}
+        onPress={onSubmit}
         loading={isLoading}
       ></Button>
     </View>
